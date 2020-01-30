@@ -68,10 +68,47 @@ void go(double gam,double a2){
             if(p > 1E-12) SvN += -p*log(p);
         }
 //        printfln("{%d,  %.10f},",b,SvN);
-		std::ostringstream os;
-		os<<std::setprecision(10)<<gam<<" "<<std::setprecision(10)<<a2<<" .result"<<std::flush;
-		std::ofstream ofs(os.str());
-		ofs<<"{"<<gam<<","<<a2<<","<<SvN<<"},"<<std::flush;
+		
+		
+		int i=1;
+		int j=N/2;
+		auto op_i = op(sites,"Sz",i);
+		auto op_j = op(sites,"Sz",j);
+
+		//'gauge' the MPS to site i
+		//any 'position' between i and j, inclusive, would work here
+		psi.position(i); 
+
+		//Create the bra/dual version of the MPS psi
+		auto psidag = dag(psi);
+
+		//Prime the link indices to make them distinct from
+		//the original ket links
+		psidag.prime("Link");
+
+		//index linking i-1 to i:
+		auto li_1 = leftLinkIndex(psi,i);
+
+		auto C = prime(psi(i),li_1)*op_i;
+		C *= prime(psidag(i),"Site");
+		for(int k = i+1; k < j; ++k)
+		    {
+		    C *= psi(k);
+		    C *= psidag(k);
+		    }
+		//index linking j to j+1:
+		auto lj = rightLinkIndex(psi,j);
+
+		C *= prime(psi(j),lj)*op_j;
+		C *= prime(psidag(j),"Site");
+
+		auto result = elt(C); //or eltC(C) if expecting complex
+		
+		std::string foo=format("%.10f %.10f ",gam,a2);
+		std::ofstream ofs(foo+".result");
+		ofs<<"{"<<gam<<","<<a2<<","<<SvN<<","<<result<<"},"<<std::flush;
+		writeToFile(foo+".sites",sites);
+		writeToFile(foo+".psi",psi);
 //        printfln("{%f, %f,  %.10f},",a2,gam,SvN);
 //    }
 }
