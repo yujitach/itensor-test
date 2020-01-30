@@ -2,6 +2,42 @@
 #include <filesystem>
 #include <iostream>
 #include <sstream>
+#include <vector>
+#include <random>
+#include <iterator>
+
+// taken from https://gist.github.com/cbsmith/5538174
+// from here
+template <typename RandomGenerator = std::default_random_engine>
+struct random_selector
+{
+	//On most platforms, you probably want to use std::random_device("/dev/urandom")()
+	random_selector(RandomGenerator g = RandomGenerator(std::random_device("/dev/urandom")()))
+		: gen(g) {}
+
+	template <typename Iter>
+	Iter select(Iter start, Iter end) {
+		std::uniform_int_distribution<> dis(0, std::distance(start, end) - 1);
+		std::advance(start, dis(gen));
+		return start;
+	}
+
+	//convenience function
+	template <typename Iter>
+	Iter operator()(Iter start, Iter end) {
+		return select(start, end);
+	}
+
+	//convenience function that works on anything with a sensible begin() and end(), and returns with a ref to the value type
+	template <typename Container>
+	auto operator()(const Container& c) -> decltype(*begin(c))& {
+		return *select(begin(c), end(c));
+	}
+
+private:
+	RandomGenerator gen;
+};
+// to here
 
 using namespace itensor;
 
@@ -120,20 +156,23 @@ namespace fs= std::filesystem;
 int main(int argc,char**argv){
 	for(;;){
 		bool found=0;
+		std::vector<std::filesystem::path> f;
+		random_selector<> sel;
 		for(const auto& entry : fs::directory_iterator(".")){
 			if(entry.path().extension()==std::string(".compute")){
-				std::cerr<<entry.path()<<std::endl;
-				std::istringstream is(entry.path().stem());
-				double gam,a2;
-				is>>gam>>a2;
-				std::cerr << "processing "<<gam << " " << a2 << std::endl;
-				fs::remove(entry);
-				go(gam,a2);
-				found=1;
-				break;
+				f.push_back(entry.path());
 			}
+			found=1;
 		}
-		if(!found){
+		if(found){
+			auto path=sel(f);
+			std::istringstream is(path.stem());
+			double gam,a2;
+			is>>gam>>a2;
+			std::cerr << "processing "<<gam << " " << a2 << std::endl;
+			fs::remove(path);
+			go(gam,a2);			
+		}else{
 			break;
 		}
 	}
