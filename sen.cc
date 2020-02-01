@@ -48,7 +48,7 @@ inline int mod(int x,int N){
 }
 
 void go(double gam,double a2){
-    int N = 40;
+    int N = 80;
     auto sites = CustomSpin(N,{"ConserveQNs=",false,"2S=",3});
     //
     // Factors of 4 and 2 are to rescale
