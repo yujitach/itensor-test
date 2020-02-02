@@ -47,8 +47,7 @@ inline int mod(int x,int N){
     return x;
 }
 
-void go(double gam,double a2){
-    int N = 80;
+void go(int N,double gam,double a2){
     auto sites = CustomSpin(N,{"ConserveQNs=",false,"2S=",3});
     //
     // Factors of 4 and 2 are to rescale
@@ -73,7 +72,7 @@ void go(double gam,double a2){
     // calculation for each DMRG sweep. 
     //
     auto sweeps = Sweeps(40); // was 30
-    sweeps.maxdim() = 10,20,100,100,200,300;
+    sweeps.maxdim() = 10,20,100,100,200,200,300;
     sweeps.cutoff() = 1E-10;
     sweeps.niter() = 2;
     sweeps.noise() = 1E-7,1E-8,0.0;
@@ -140,9 +139,9 @@ void go(double gam,double a2){
 
 		auto result = elt(C); //or eltC(C) if expecting complex
 		
-		std::string foo=format("%.10f %.10f ",gam,a2);
+		std::string foo=format("%d %.10f %.10f ",N,gam,a2);
 		std::ofstream ofs(foo+".result");
-		ofs<<"{"<<gam<<","<<a2<<","<<SvN<<","<<result<<"},"<<std::flush;
+		ofs<<"{"<<N<<","<<gam<<","<<a2<<","<<SvN<<","<<result<<"},"<<std::flush;
 		writeToFile(foo+".sites",sites);
 		writeToFile(foo+".psi",psi);
 //        printfln("{%f, %f,  %.10f},",a2,gam,SvN);
@@ -171,7 +170,8 @@ int main(int argc,char**argv){
 			is>>gam>>a2;
 			std::cerr << "processing "<<gam << " " << a2 << std::endl;
 			fs::remove(path);
-			go(gam,a2);			
+			go(40,gam,a2);			
+			go(60,gam,a2);			
 		}else{
 			break;
 		}
