@@ -58,11 +58,13 @@ void go(int N,double gam,double a2){
 	}
 */	
     auto ampo = AutoMPO(sites);
-    for(int j = 1; j <= N; ++j){
+    for(int j = 1; j <= N-1; ++j){
         ampo += -1,"Sz",j,"Sz",mod(j+1,N);
-        ampo += (1+a2),"Sz",j,"Sz",j;
     } 
+	ampo+= -.5,"Sz",1;
+	ampo+= -.5,"Sz",N;
     for(int j = 1; j <= N; ++j){
+        ampo += (1+a2),"Sz",j,"Sz",j;
         ampo += -gam/2,"S+",j;
         ampo += -gam/2,"S-",j;
     }
@@ -105,11 +107,15 @@ void go(int N,double gam,double a2){
 //        printfln("{%d,  %.10f},",b,SvN);
 		
 		
-		int i=1;
+	//	int i=1;
 		int j=N/2;
-		auto op_i = op(sites,"Sz",i);
+	//	auto op_i = op(sites,"Sz",i);
 		auto op_j = op(sites,"Sz",j);
 
+	auto ket=psi(j);
+	auto bra=dag(prime(ket,"Site"));
+	auto result=elt(bra*op_j*ket);
+	/*
 		//'gauge' the MPS to site i
 		//any 'position' between i and j, inclusive, would work here
 		psi.position(i); 
@@ -138,7 +144,7 @@ void go(int N,double gam,double a2){
 		C *= prime(psidag(j),"Site");
 
 		auto result = elt(C); //or eltC(C) if expecting complex
-		
+	*/	
 		std::string foo=format("%d %.10f %.10f ",N,gam,a2);
 		std::ofstream ofs(foo+".result");
 		ofs<<"{"<<N<<","<<gam<<","<<a2<<","<<SvN<<","<<result<<"},"<<std::flush;
@@ -170,8 +176,8 @@ int main(int argc,char**argv){
 			is>>gam>>a2;
 			std::cerr << "processing "<<gam << " " << a2 << std::endl;
 			fs::remove(path);
-			go(40,gam,a2);			
-			go(60,gam,a2);			
+			go(200,gam,a2);			
+			go(300,gam,a2);			
 		}else{
 			break;
 		}
