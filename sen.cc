@@ -73,8 +73,8 @@ void go(int N,double gam,double a2){
     // Set the parameters controlling the accuracy of the DMRG
     // calculation for each DMRG sweep. 
     //
-    auto sweeps = Sweeps(60); // was 30
-    sweeps.maxdim() = 10,20,100,100,200,200,300,300,400;
+    auto sweeps = Sweeps(80); // was 30
+    sweeps.maxdim() = 10,20,100,100,200,200,300,300,400,400,500;
     sweeps.cutoff() = 1E-10;
     sweeps.niter() = 2;
     sweeps.noise() = 1E-7,1E-8,0.0;
@@ -173,11 +173,11 @@ int main(int argc,char**argv){
 			auto path=sel(f);
 			std::istringstream is(path.stem());
 			double gam,a2;
-			is>>gam>>a2;
-			std::cerr << "processing "<<gam << " " << a2 << std::endl;
+			int N;
+			is>>N>>gam>>a2;
+			std::cerr << "processing "<<N<<" "<<gam << " " << a2 << std::endl;
 			fs::remove(path);
-			go(200,gam,a2);			
-			go(300,gam,a2);			
+			go(N,gam,a2);			
 		}else{
 			break;
 		}
