@@ -77,7 +77,7 @@ void go(int N,double gam,double a2){
     
     std::string foo=format("%d %.10f %.10f ",N,gam,a2);
     std::ofstream ofs(foo+".excitedresult");
-    ofs<<"{"<<N<<","<<gam<<","<<a2<<","<<en<<","<<en1<<"},"<<std::flush;
+    ofs<<format("{%d , %.10f , %.10f , %.10f , %.10f , %.10f},",N,gam,a2,en,en1,inner(psi,psi1))<<std::flush;
     
     writeToFile(foo+".psi",psi);
     writeToFile(foo+".excitedpsi",psi1);
