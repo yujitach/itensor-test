@@ -20,7 +20,7 @@ int main(int argc,char**argv){
     readFromFile(s+".psi",psi);
     for(auto j=1;j<N;j++){
         auto op_j = op(sites,"Sz",j);
-
+        psi.position(j);
         auto ket=psi(j);
         auto bra=dag(prime(ket,"Site"));
         auto result=elt(bra*op_j*ket);
