@@ -1,19 +1,47 @@
 #include "itensor/all.h"
 #include <iostream>
 #include <sstream>
+#include <filesystem>
+#include <random>
+#include <iterator>
+
+// taken from https://gist.github.com/cbsmith/5538174
+// from here
+template <typename RandomGenerator = std::default_random_engine>
+struct random_selector
+{
+    //On most platforms, you probably want to use std::random_device("/dev/urandom")()
+    random_selector(RandomGenerator g = RandomGenerator(std::random_device("/dev/urandom")()))
+        : gen(g) {}
+
+    template <typename Iter>
+    Iter select(Iter start, Iter end) {
+        std::uniform_int_distribution<> dis(0, std::distance(start, end) - 1);
+        std::advance(start, dis(gen));
+        return start;
+    }
+
+    //convenience function
+    template <typename Iter>
+    Iter operator()(Iter start, Iter end) {
+        return select(start, end);
+    }
+
+    //convenience function that works on anything with a sensible begin() and end(), and returns with a ref to the value type
+    template <typename Container>
+    auto operator()(const Container& c) -> decltype(*begin(c))& {
+        return *select(begin(c), end(c));
+    }
+
+private:
+    RandomGenerator gen;
+};
+// to here
+
 
 using namespace itensor;
 
-int main(int argc,char**argv){
-    if(argc!=2){
-        exit(-1);
-    }
-    char*p=argv[1];
-    std::string s=p;
-    std::istringstream is(s);
-    int N;
-    double gam,a2;
-    is>>N>>gam>>a2;
+void go(std::string s,int N,double gam,double a2){
     CustomSpin sites;
     readFromFile(s+".sites",sites);
     MPS psi;
@@ -31,10 +59,10 @@ int main(int argc,char**argv){
         ampo += -gam/2,"S-",j;
     }
     auto H = toMPO(ampo);
-
+    
     auto en=inner(psi,H,psi);
     
-    std::cout<<en<<std::endl;
+    //    std::cout<<en<<std::endl;
     
     auto wfs = std::vector<MPS>(1);
     wfs.at(0) = psi;
@@ -44,21 +72,46 @@ int main(int argc,char**argv){
     sweeps.cutoff() = 1E-10;
     sweeps.niter() = 2;
     sweeps.noise() = 1E-7,1E-8,0.0;
-
+    
     
     auto [en1,psi1] = dmrg(H,wfs,randomMPS(sites),sweeps,{"Silent=",true,"Weight=",20.0});
-
-    auto enX=inner(psi1,H,psi1);
     
-    std::cerr<<en1<<":"<<enX<<std::endl;
+//    auto enX=inner(psi1,H,psi1);
+    
+    //  std::cerr<<en1<<":"<<enX<<std::endl;
     
     std::string foo=format("%d %.10f %.10f ",N,gam,a2);
     std::ofstream ofs(foo+".excitedresult");
     ofs<<"{"<<N<<","<<gam<<","<<a2<<","<<en<<","<<en1<<"},"<<std::flush;
-
+    
     writeToFile(foo+".excitedpsi",psi1);
     writeToFile(foo+".excitedsites",sites);
-
+}
+namespace fs= std::filesystem;
+int main(int argc,char**argv){
+    for(;;){
+        bool found=0;
+        std::vector<std::filesystem::path> f;
+        random_selector<> sel;
+        for(const auto& entry : fs::directory_iterator(".")){
+            if(entry.path().extension()==std::string(".excitedcompute")){
+                f.push_back(entry.path());
+            }
+            found=1;
+        }
+        if(found){
+            auto path=sel(f);
+            std::istringstream is(path.stem());
+            double gam,a2;
+            int N;
+            is>>N>>gam>>a2;
+            std::cerr << "processing "<<N<<" "<<gam << " " << a2 << std::endl;
+            fs::remove(path);
+            go(path.stem(),N,gam,a2);
+        }else{
+            break;
+        }
+    }
     return 0;
 }
 
