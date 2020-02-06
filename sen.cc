@@ -147,8 +147,9 @@ void go(int N,double gam,double a2){
 	*/	
 		std::string foo=format("%d %.10f %.10f ",N,gam,a2);
 		std::ofstream ofs(foo+".result");
-		ofs<<"{"<<N<<","<<gam<<","<<a2<<","<<SvN<<","<<result<<"},"<<std::flush;
-		writeToFile(foo+".sites",sites);
+		ofs<<format("{%d, %.10f, %.10f, %.10f, %.10f, %.10f},",
+                            N, gam, a2, SvN, result, en)<<std::flush;
+                writeToFile(foo+".sites",sites);
 		writeToFile(foo+".psi",psi);
 //        printfln("{%f, %f,  %.10f},",a2,gam,SvN);
 //    }
