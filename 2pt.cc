@@ -19,6 +19,7 @@ int main(int argc,char**argv){
     MPS psi;
     readFromFile(s+".psi",psi);
     for(auto j=1;j<N;j++){
+        int i=1;
         auto op_i = op(sites,"Sz",i);
         auto op_j = op(sites,"Sz",j);
         psi.position(j);
