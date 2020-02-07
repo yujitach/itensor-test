@@ -19,7 +19,7 @@ int main(int argc,char**argv){
     MPS psi;
     readFromFile(s+".psi",psi);
     for(auto j=1;j<N;j++){
-        auto op_j = op(sites,"Sz",j);
+        auto op_j = op(sites,"S+",j)+op(sites,"S-",j);
         psi.position(j);
         auto ket=psi(j);
         auto bra=dag(prime(ket,"Site"));
