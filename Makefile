@@ -9,7 +9,7 @@ LIBRARY_DIR=../itensor
 #    set APP to 'myappname'. Running 'make' will compile the app.
 #    Running 'make debug' will make a program called 'myappname-g'
 #    which includes debugging symbols and can be used in gdb (Gnu debugger);
-APP=1pt
+APP=potts-excited
 
 # 4. Add any headers your program depends on here. The make program
 #    will auto-detect if these headers have changed and recompile your app.
@@ -36,7 +36,7 @@ GOBJECTS=$(patsubst %,.debug_objs/%, $(OBJECTS))
 
 CCFLAGS= -I. $(ITENSOR_INCLUDEFLAGS) $(CPPFLAGS) $(OPTIMIZATIONS)
 CCGFLAGS= -I. $(ITENSOR_INCLUDEFLAGS) $(DEBUGFLAGS)
-LIBFLAGS=-L'$(ITENSOR_LIBDIR)' -lstdc++fs $(ITENSOR_LIBFLAGS)
+LIBFLAGS=-L'$(ITENSOR_LIBDIR)'  $(ITENSOR_LIBFLAGS)
 LIBGFLAGS=-L'$(ITENSOR_LIBDIR)' $(ITENSOR_LIBGFLAGS)
 
 #Rules ------------------
